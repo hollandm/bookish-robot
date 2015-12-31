@@ -1,0 +1,28 @@
+package Brains;
+
+import Game.Game.DataKey;
+import Game.Model.GameState;
+import Game.Model.Turn;
+
+public abstract class Base_Brain {
+
+    private static int nextBrainID = 0;
+    public final int id = ++nextBrainID;
+
+
+    private DataKey key;
+    public void setKey(DataKey key) {
+        this.key = key;
+    }
+
+    protected String name;
+    public String getName() {
+        return name;
+    }
+
+    public Turn takeTurn(GameState state) {
+
+        return new Turn();
+    }
+
+}
