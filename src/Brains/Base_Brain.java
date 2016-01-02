@@ -10,7 +10,7 @@ public abstract class Base_Brain {
     public final int id = ++nextBrainID;
 
 
-    private DataKey key;
+    protected DataKey key;
     public void setKey(DataKey key) {
         this.key = key;
     }
@@ -20,9 +20,8 @@ public abstract class Base_Brain {
         return name;
     }
 
-    public Turn takeTurn(GameState state) {
+    public void takeTurn(GameState state, Turn thisTurn) {
 
-        return new Turn();
     }
 
 }

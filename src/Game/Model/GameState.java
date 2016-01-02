@@ -33,7 +33,7 @@ public class GameState {
 
     /**
      * getCurrentTurn
-     * @return The number of individual players turns that have occurred this game including this one
+     * @return The number of individual players turns that have occurred this game, including this one
      */
     public int getCurrentTurn() {
         return turn;
@@ -57,6 +57,14 @@ public class GameState {
     }
 
     /**
+     * getCurrentPlayer
+     * @return The player object of the player whose turn it is
+     */
+    public Player getCurrentPlayer() {
+        return getPlayerByID(getCurrentPlayersID());
+    }
+
+    /**
      * countPlayers
      * @return The number of players in the game
      */
@@ -73,8 +81,29 @@ public class GameState {
     }
 
 
+    /**
+     * getStage
+     * @return The stage of the game (setup, mid-game, or post-game)
+     */
     public GameStage getStage() {
         return stage;
+    }
+
+    /**
+     * getDeck
+     * @param key
+     * @return If master key is provided then the actual deck, otherwise a copy of unknown cards
+     */
+    public Stack<Card> getDeck(DataKey key) {
+
+        if (key.isMasterKey())
+            return deck;
+
+        Stack<Card> deckCopy = new Stack<>();
+        for (Card c : deck)
+            deckCopy.add(Card.Unknown);
+
+        return deckCopy;
     }
 
 
@@ -171,6 +200,8 @@ public class GameState {
         if (players.size() < Rules.MIN_PLAYERS)
             throw new PlayerCountExeption();
 
+        // No need to check if master key because brains can't do anything yet
+
         setupDeck();
 
         for (Player p: this.players) {
@@ -181,6 +212,21 @@ public class GameState {
 
         stage = GameStage.GAME_STARTED;
     }
+
+    /**
+     * nextTurn
+     *  Increments the turn counter, but only if the master key is provided
+     * @param key
+     */
+    public void nextTurn(DataKey key) {
+
+        if (!key.isMasterKey())
+            return;
+
+        ++turn;
+    }
+
+
 
 }
 

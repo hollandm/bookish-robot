@@ -34,6 +34,16 @@ public class Player  {
         return handCopy;
     }
 
+    public void addCard(DataKey key, Card drawnCard) {
+
+        if (!key.isMasterKey())
+            return;
+
+        hand.add(drawnCard);
+
+    }
+
+
     private int wins = 0;
     public int getWins() {
         return wins;
@@ -47,5 +57,17 @@ public class Player  {
         playerID = id;
         playerName = name;
     }
+
+    private boolean isHandmaidenProtected = false;
+    public boolean isHandmaidenProtected() {
+        return this.isHandmaidenProtected;
+    }
+    public void setHandmaidProtected(DataKey key, boolean isProtected) {
+        if (!key.isMasterKey())
+            return;
+
+       this.isHandmaidenProtected = isProtected;
+    }
+
 
 }
