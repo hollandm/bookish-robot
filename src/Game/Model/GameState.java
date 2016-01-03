@@ -1,8 +1,7 @@
 package Game.Model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Stack;
+import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 
 import Game.Game.DataKey;
 import Game.Exceptions.*;
@@ -19,10 +18,14 @@ public class GameState {
     // players: The list of players in the game
     private ArrayList<Player> players;
 
+    // playerTurnOrder: The turn queue. The current player is the first person in the queue.
+    //      Players who are eliminated are removed from the queue
+    private LinkedList<Player> playerTurnOrder;
+
     // deck: The cards in the deck
     private Stack<Card> deck;
 
-    // discard: the cards that were set aside at the begining of the game
+    // discard: the cards that were set aside at the beginning of the game
     private ArrayList<Card> discard;
 
     Stack<Turn> turnHistory;
@@ -40,20 +43,17 @@ public class GameState {
     }
 
     /**
-     * getCurrentPlayersID
-     * @return The id of the current player
-     */
-    public int getCurrentPlayersID() {
-        return turn % players.size();
-    }
-
-    /**
      * getPlayerByID
      * @param id
-     * @return the player with the given id
+     * @return the player with the given id or null if it is an invalid ID
      */
     public Player getPlayerByID(int id) {
-        return players.get(id);
+
+        for (Player p : this.players)
+            if (p.getPlayerID() == id)
+                return p;
+
+        return null;
     }
 
     /**
@@ -61,7 +61,40 @@ public class GameState {
      * @return The player object of the player whose turn it is
      */
     public Player getCurrentPlayer() {
-        return getPlayerByID(getCurrentPlayersID());
+
+        if (playerTurnOrder.isEmpty())
+            return null;
+
+        return playerTurnOrder.peek();
+    }
+
+    /**
+     * getNnthNextPlayer
+     *  Get the nth next player were 0 is the current player, 1 is the next player, ect. This will wrap so you can see
+     *      more than one round into the future assuming no more players get eliminated.
+     *
+     * @param n, the index to look up
+     * @return the nth next player
+     */
+    public Player getNnthNextPlayer(int n) {
+
+        if (playerTurnOrder.isEmpty())
+            return null;
+
+        return playerTurnOrder.get(n % playerTurnOrder.size());
+    }
+
+
+    public boolean isActivePlayer(Player p) {
+
+        if (p == null)
+            return false;
+
+        return this.playerTurnOrder.contains(p);
+    }
+
+    public LinkedList<Player> getActivePlayers() {
+        return new LinkedList<>(playerTurnOrder);
     }
 
     /**
@@ -70,6 +103,14 @@ public class GameState {
      */
     public int countPlayers() {
         return players.size();
+    }
+
+    /**
+     * countRemainingPlayers
+     * @return The number of players still in the game
+     */
+    public int countRemainingPlayers() {
+        return playerTurnOrder.size();
     }
 
     /**
@@ -116,6 +157,7 @@ public class GameState {
         deck = new Stack<>();
         discard = new ArrayList<>();
         turnHistory = new Stack<>();
+        playerTurnOrder = new LinkedList<>();
     }
 
     /**
@@ -202,6 +244,13 @@ public class GameState {
 
         // No need to check if master key because brains can't do anything yet
 
+
+        // Add players to the turn order. #TODO: Support winner of last game going first
+        playerTurnOrder = new LinkedList<>();
+        for (Player p : this.players) {
+            playerTurnOrder.add(p);
+        }
+
         setupDeck();
 
         for (Player p: this.players) {
@@ -213,9 +262,17 @@ public class GameState {
         stage = GameStage.GAME_STARTED;
     }
 
+    public void eliminatePlayer(DataKey key, Player p) {
+
+        if (!key.isMasterKey())
+            return;
+
+        this.playerTurnOrder.remove(p);
+    }
+
     /**
      * nextTurn
-     *  Increments the turn counter, but only if the master key is provided
+     *  Increments the turn counter and changes the current player, but only if the master key is provided
      * @param key
      */
     public void nextTurn(DataKey key) {
@@ -224,6 +281,9 @@ public class GameState {
             return;
 
         ++turn;
+
+        Player tmp = playerTurnOrder.pop();
+        playerTurnOrder.add(tmp);
     }
 
 

@@ -1,6 +1,7 @@
 package Game.Model;
 
 import java.util.ArrayList;
+
 import Game.Game.DataKey;
 
 
@@ -17,24 +18,23 @@ public class Player  {
     }
 
     private ArrayList<Card> hand = new ArrayList<>(2);
+
     public ArrayList<Card> getHand(DataKey key) {
+
         if (key.isMasterKey())
             return hand;
 
-        ArrayList<Card> handCopy = new ArrayList<>();
-
         if (key.getPlayer() == this)
-            for (Card c : hand)
-                handCopy.add(c);
+            return new ArrayList<>(hand);
 
-        else
-            for (Card c : hand)
-                handCopy.add(Card.Unknown);
+        ArrayList<Card> mysteryHand = new ArrayList<>();
+        for (Card c : hand)
+            mysteryHand.add(Card.Unknown);
 
-        return handCopy;
+        return mysteryHand;
     }
 
-    public void addCard(DataKey key, Card drawnCard) {
+    public void addCardToHand(DataKey key, Card drawnCard) {
 
         if (!key.isMasterKey())
             return;
@@ -69,5 +69,30 @@ public class Player  {
        this.isHandmaidenProtected = isProtected;
     }
 
+    private ArrayList<Card> discardedCards = new ArrayList<>();
+
+    public void addPlayedCard(DataKey key, Card playedCard) {
+
+        if (!key.isMasterKey())
+            return;
+
+        this.discardedCards.add(playedCard);
+    }
+
+    public ArrayList<Card> getPlayedCards(DataKey key) {
+
+        if (key.isMasterKey())
+            return this.discardedCards;
+
+        return new ArrayList<>(this.discardedCards);
+    }
+
+    public void discardCard(DataKey key, Card card) {
+        if (!key.isMasterKey())
+            return;
+
+        hand.remove(card);
+        discardedCards.add(card);
+    }
 
 }

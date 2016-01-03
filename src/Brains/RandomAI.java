@@ -7,6 +7,7 @@ import Game.Model.Turn;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.Random;
 
 /**
@@ -15,30 +16,32 @@ import java.util.Random;
 public class RandomAI extends Base_Brain {
 
     String name = "Random AI";
-
+    Random random = new Random();
 
     public void takeTurn(GameState state, Turn thisTurn) {
 
         Player myPlayer = state.getCurrentPlayer();
         ArrayList<Card> myHand = myPlayer.getHand(super.key);
 
-        Collections.shuffle(myHand);
-        Card selectedCard = myHand.get(0);
+        if (random.nextBoolean())
+            thisTurn.swapPlayedAndRemainingCards(key);
 
-        Player target = selectRandomEnemy(state);
+        thisTurn.setTargetPlayer(key, selectRandomEnemy(state));
+
+        ArrayList<Card> guessable = Card.getGuessableCards();
+        Collections.shuffle(guessable);
+        thisTurn.setGuessedCard(key, guessable.get(0));
 
     }
 
     private Player selectRandomEnemy(GameState state) {
 
-        int targetId;
-        Random generator = new Random();
+        LinkedList<Player> players = state.getActivePlayers();
+        players.remove(state.getPlayerByID(super.id));
 
-        do {
-            targetId = generator.nextInt(state.countPlayers());
-        } while (targetId == super.id);
+        Collections.shuffle(players);
 
-        return state.getPlayerByID(targetId);
+        return players.get(0);
     }
 
 }

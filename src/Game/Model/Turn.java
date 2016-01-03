@@ -127,7 +127,7 @@ public class Turn {
      */
     private boolean targetPlayerWasHandmaidProtected;
 
-    public boolean getTargetPlayerWasHandmaidProtected() {
+    public boolean wasTargetPlayerHandmaidProtected() {
         return targetPlayerWasHandmaidProtected;
     }
 
@@ -150,7 +150,7 @@ public class Turn {
 
         // Visible to acting player if they played a Baron or a King
         if (key.getPlayer() == this.actingPlayer && !this.targetPlayerWasHandmaidProtected
-                && (isTurnFinalized && (this.playedCard == Card.Baron || this.playedCard == Card.King)))
+                && (isTurnFinalized && (this.playedCard == Card.Baron || this.playedCard == Card.King || this.playedCard == Card.Prince)))
             return this.targetPlayersCard;
 
         // Visible to everyone if this card was correctly guessed by a guard
@@ -223,7 +223,7 @@ public class Turn {
             this.guessedCard = null;
 
         // There are certain cards that you can't target a player with
-        if (this.playedCard == Card.Handmaid || this.playedCard == Card.Countess || this.playedCard == Card.Princess)
+        if (!Card.getTargetingCards().contains(this.playedCard))
             this.setTargetPlayer(key, null);
 
         isTurnFinalized = true;
@@ -290,6 +290,17 @@ public class Turn {
         this.actingPlayerRemainingCard = this.playedCard;
         this.playedCard = tmp;
 
+    }
+
+    public boolean isValidTurn(GameState state) {
+
+        if (Card.getTargetingCards().contains(this.playedCard) && state.isActivePlayer(this.targetPlayer))
+            return false;
+
+        if (this.playedCard == Card.Guard && Card.getGuessableCards().contains(this.guessedCard))
+            return false;
+
+        return true;
     }
 
 }

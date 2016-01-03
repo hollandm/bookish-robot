@@ -24,4 +24,14 @@ public abstract class Base_Brain {
 
     }
 
+    /**
+     * showTurn
+     *  Shows the Brain the results of a turn.
+     *
+     * @param turn
+     */
+    public void showTurn(Turn turn) {
+
+    }
+
 }
