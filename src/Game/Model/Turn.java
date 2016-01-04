@@ -114,10 +114,8 @@ public class Turn {
 
         if (targetPlayer != null) {
             this.targetPlayerWasHandmaidProtected = targetPlayer.isHandmaidenProtected();
-            this.targetPlayersCard = targetPlayer.getHand(key).get(0);
         } else {
             this.targetPlayerWasHandmaidProtected = false;
-            this.targetPlayersCard = null;
         }
 
     }
@@ -148,9 +146,9 @@ public class Turn {
         if (key.getPlayer() == this.targetPlayer)
             return this.targetPlayersCard;
 
-        // Visible to acting player if they played a Baron or a King
+        // Visible to acting player if they played a Baron, King, or Prince, or Priest and the target is not protected
         if (key.getPlayer() == this.actingPlayer && !this.targetPlayerWasHandmaidProtected
-                && (isTurnFinalized && (this.playedCard == Card.Baron || this.playedCard == Card.King || this.playedCard == Card.Prince)))
+                && (isTurnFinalized && (this.playedCard == Card.Baron || this.playedCard == Card.King || this.playedCard == Card.Prince || this.playedCard == Card.Priest)))
             return this.targetPlayersCard;
 
         // Visible to everyone if this card was correctly guessed by a guard
@@ -159,6 +157,11 @@ public class Turn {
             return this.targetPlayersCard;
 
         return Card.Unknown;
+    }
+
+    public void setTargetPlayersCard(DataKey key, Card card) {
+        if (key.isMasterKey())
+            this.targetPlayersCard = card;
     }
 
     /**
@@ -175,7 +178,7 @@ public class Turn {
 
     public void setGuessedCard(DataKey key, Card guessedCard) {
 
-        if (!key.isMasterKey())
+        if (!key.isMasterKey() && key.getPlayer() != this.actingPlayer)
             return;
 
         this.guessedCard = guessedCard;
@@ -225,6 +228,9 @@ public class Turn {
         // There are certain cards that you can't target a player with
         if (!Card.getTargetingCards().contains(this.playedCard))
             this.setTargetPlayer(key, null);
+
+        if (this.targetPlayer != null)
+            this.targetPlayersCard = this.targetPlayer.getHand(key).get(0);
 
         isTurnFinalized = true;
     }
@@ -294,10 +300,10 @@ public class Turn {
 
     public boolean isValidTurn(GameState state) {
 
-        if (Card.getTargetingCards().contains(this.playedCard) && state.isActivePlayer(this.targetPlayer))
+        if (Card.getTargetingCards().contains(this.playedCard) && !state.isActivePlayer(this.targetPlayer))
             return false;
 
-        if (this.playedCard == Card.Guard && Card.getGuessableCards().contains(this.guessedCard))
+        if (this.playedCard == Card.Guard && !Card.getGuessableCards().contains(this.guessedCard))
             return false;
 
         return true;

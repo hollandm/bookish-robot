@@ -7,9 +7,45 @@ import Game.Exceptions.GameException;
 import Game.Model.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 
 public class Game {
+
+    public static final boolean PRINT_GAME_EVENTS = true;
+    public static final boolean PRINT_SENSITIVE_DATA = true;
+    private static boolean isNewLine = true;
+    public static int indentation = 0;
+
+    public static void print(String text, boolean isSensitive) {
+        if (!PRINT_GAME_EVENTS)
+            return;
+
+        if (isSensitive && !PRINT_SENSITIVE_DATA)
+            return;
+
+        if (isNewLine)
+            System.out.print(String.join("", Collections.nCopies(indentation, " ")));
+
+        System.out.print(text);
+
+        Game.isNewLine = false;
+    }
+
+    public static void println(String text, boolean isSensitive) {
+        if (!PRINT_GAME_EVENTS)
+            return;
+
+        if (isSensitive && !PRINT_SENSITIVE_DATA)
+            return;
+
+        if (isNewLine)
+            System.out.print(String.join("", Collections.nCopies(indentation, " ")));
+
+        System.out.println(text);
+        Game.isNewLine = true;
+    }
+
 
     public class DataKey {
         private final Player player;
@@ -46,21 +82,51 @@ public class Game {
             brain.setKey(key);
         }
 
+        Game.println("Starting a game with " + state.countPlayers() + " players.", false);
+
         state.startGame(masterKey);
 
         while (state.getStage() == GameStage.GAME_STARTED) {
-            int currentPlayerId = state.getCurrentPlayer().getPlayerID();
-            Base_Brain currentPlayerBrain = brains.get(currentPlayerId);
-
             Turn thisTurn = startTurn(masterKey);
 
-            do {
-                currentPlayerBrain.takeTurn(state, thisTurn);
-            } while (thisTurn.isValidTurn(state) == false);
+            Player currentPlayer = state.getCurrentPlayer();
+            int currentPlayerId = currentPlayer.getPlayerID();
+            Base_Brain currentPlayerBrain = null;
+
+            for (Base_Brain brain : brains)
+                if (brain.getId() == currentPlayerId)
+                    currentPlayerBrain = brain;
+
+
+            Game.println("Turn " + thisTurn.getTurnCount() + ": " + thisTurn.getActingPlayer() + "'s Turn.", false);
+            Game.indentation += 4;
+            Game.println("Drew: " + thisTurn.getDrawnCard(masterKey), true);
+
+            if (currentPlayer.hasCard(masterKey, Card.Countess) && (currentPlayer.hasCard(masterKey, Card.King) || currentPlayer.hasCard(masterKey, Card.Prince))) {
+
+                if (thisTurn.getPlayedCard() != Card.Countess)
+                    thisTurn.swapPlayedAndRemainingCards(masterKey);
+
+            } else {
+
+                do {
+                    //noinspection ConstantConditions
+                    currentPlayerBrain.takeTurn(state, thisTurn);
+                } while (thisTurn.isValidTurn(state) == false);
+
+            }
+
+
+
+            thisTurn.finalize(masterKey);
 
             applyAction(thisTurn, masterKey);
 
-            thisTurn.finalize(masterKey);
+            Game.indentation -= 4;
+
+            checkWinner(masterKey);
+
+            state.saveTurn(masterKey, thisTurn);
 
             for (Base_Brain brain : brains)
                 brain.showTurn(thisTurn);
@@ -87,6 +153,19 @@ public class Game {
         if (!key.isMasterKey())
             return;
 
+        if (Game.PRINT_GAME_EVENTS) {
+
+            Game.println("Played: " + action.getPlayedCard(), false);
+
+            if (action.getTargetPlayer() != null) {
+                Game.println("Targeted: " + action.getTargetPlayer(), false);
+
+                if (action.wasTargetPlayerHandmaidProtected())
+                    Game.println(action.getTargetPlayer() + " is protected by the handmaiden", false);
+            }
+        }
+
+
         //Remove the card they played from their hand
         action.getActingPlayer().discardCard(key, action.getPlayedCard());
 
@@ -111,16 +190,35 @@ public class Game {
                 action.getTargetPlayer().getHand(key).remove(targetPlayerCard);
                 action.getTargetPlayer().getHand(key).add(activePlayerCard);
 
+
+
+                if (Game.PRINT_GAME_EVENTS) {
+                    Game.println(action.getActingPlayer() + " has traded hands with " + action.getTargetPlayer(), false);
+
+                    Game.println(action.getActingPlayer() + " now has " + targetPlayerCard, true);
+                    Game.println(action.getTargetPlayer() + " now has " + activePlayerCard, true);
+                }
+
                 break;
 
             case Prince:
                 if (action.wasTargetPlayerHandmaidProtected())
                     break;
 
+                if (Game.PRINT_GAME_EVENTS)
+                    Game.println(action.getTargetPlayer() + " was forced to discard " + action.getTargetPlayersCard(key), false);
+
                 action.getTargetPlayer().discardCard(key, action.getTargetPlayersCard(key));
                 if (state.countCardsLeftInDeck() == 0 || action.getTargetPlayersCard(key) == Card.Princess) {
                     state.eliminatePlayer(key, action.getTargetPlayer());
                     break;
+                }
+
+                if (Game.PRINT_GAME_EVENTS) {
+                    if (Game.PRINT_SENSITIVE_DATA)
+                        Game.println(action.getTargetPlayer() + " drew " + action.getDrawnCard(key), true);
+                    else
+                        Game.println(action.getTargetPlayer() + " drew a new card", false);
                 }
 
                 action.getTargetPlayer().addCardToHand(key, state.getDeck(key).pop());
@@ -134,37 +232,113 @@ public class Game {
                 if (action.wasTargetPlayerHandmaidProtected())
                     break;
 
-                if (action.getActingPlayerRemainingCard(key).value > action.getTargetPlayersCard(key).value)
+                if (Game.PRINT_GAME_EVENTS) {
+                    Game.println(action.getTargetPlayer() + " has to compare cards with " + action.getActingPlayer(), false);
+                    Game.println( action.getActingPlayer() + " has " + action.getActingPlayerRemainingCard(key), true);
+                    Game.println(action.getTargetPlayer() + " has " + action.getTargetPlayersCard(key), true);
+                }
+
+
+                if (action.getActingPlayerRemainingCard(key).value > action.getTargetPlayersCard(key).value) {
+                    action.getTargetPlayer().discardCard(key, action.getTargetPlayersCard(key));
                     state.eliminatePlayer(key, action.getTargetPlayer());
-                else if (action.getActingPlayerRemainingCard(key).value < action.getTargetPlayersCard(key).value)
+                }
+                else if (action.getActingPlayerRemainingCard(key).value < action.getTargetPlayersCard(key).value) {
+                    action.getActingPlayer().discardCard(key, action.getActingPlayerRemainingCard(key));
                     state.eliminatePlayer(key, action.getActingPlayer());
+                }
+
 
                 break;
 
             case Priest:
                 // The hand is visible to the player in the turn object
+                if (action.wasTargetPlayerHandmaidProtected())
+                    break;
+
+                if (Game.PRINT_GAME_EVENTS)
+                    Game.println(action.getTargetPlayer() + " has " + action.getTargetPlayersCard(key), true);
+
                 break;
 
             case Guard:
                 if (action.wasTargetPlayerHandmaidProtected())
                     break;
 
-                if (action.getTargetPlayersCard(key) == action.getGuessedCard())
+                if (Game.PRINT_GAME_EVENTS)
+                    Game.println(action.getActingPlayer() + " guessed " + action.getGuessedCard(), false);
+
+                boolean wasCorrect = action.getTargetPlayersCard(key) == action.getGuessedCard();
+
+                if (Game.PRINT_GAME_EVENTS && (Game.PRINT_SENSITIVE_DATA || wasCorrect))
+                    Game.println(action.getTargetPlayer() + " had " + action.getTargetPlayersCard(key), !wasCorrect);
+
+                if (wasCorrect)
                     state.eliminatePlayer(key, action.getTargetPlayer());
+
 
                 break;
 
         }
+    }
 
-
-        // Check if the game has ended
+    public Player checkWinner(DataKey key) {
         if (state.countCardsLeftInDeck() == 0 || state.countRemainingPlayers() == 1) {
-            //TODO: Do stuff if the game has ended
+            Player winner = null;
 
-            return;
+            // Last player standing is automatically the winner
+            if (state.countRemainingPlayers() == 1) {
+                winner = state.getActivePlayers(key).get(0);
+
+                Game.println("There is only one player remaining", false);
+
+            } else {
+
+                // Otherwise the player with the highest card value in their hand wins
+                int maxScore = 0;
+                ArrayList<Player> tiedPlayers = new ArrayList<>();
+
+                for (Player p : state.getActivePlayers(key)) {
+                    int playerScore = p.getHand(key).get(0).value;
+                    if (playerScore > maxScore) {
+                        winner = p;
+                        maxScore = playerScore;
+
+                        tiedPlayers.clear();
+                        tiedPlayers.add(p);
+
+                    } else if (playerScore == maxScore) {
+                        tiedPlayers.add(p);
+                    }
+                }
+
+                // Ties are broken by comparing the total value of all played cards
+                if (tiedPlayers.size() > 1) {
+
+                    maxScore = 0;
+
+                    for (Player p : tiedPlayers) {
+                        int playerScore = 0;
+                        for (Card c : p.getPlayedCards(key))
+                            playerScore += c.value;
+
+                        if (playerScore > maxScore) {
+                            maxScore = playerScore;
+                            winner = p;
+                        }
+                    }
+
+                }
+
+                Game.println("There are no more cards in the deck", false);
+            }
+
+            winner.addWin(key);
+            state.setWinner(key, winner);
+            return winner;
         }
 
-        state.nextTurn(key);
+        return null;
     }
 
     public static void main(String[] args) throws GameException {

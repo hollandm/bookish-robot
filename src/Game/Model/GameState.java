@@ -1,8 +1,8 @@
 package Game.Model;
 
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
 
+import Game.Game;
 import Game.Game.DataKey;
 import Game.Exceptions.*;
 
@@ -28,7 +28,10 @@ public class GameState {
     // discard: the cards that were set aside at the beginning of the game
     private ArrayList<Card> discard;
 
-    Stack<Turn> turnHistory;
+    //turnHistory: The turns that have occured in the game
+    private Stack<Turn> turnHistory;
+
+    private Player winner;
 
     /*************
      ** Getters **
@@ -44,7 +47,7 @@ public class GameState {
 
     /**
      * getPlayerByID
-     * @param id
+     * @param id the id to get the player by
      * @return the player with the given id or null if it is an invalid ID
      */
     public Player getPlayerByID(int id) {
@@ -93,7 +96,11 @@ public class GameState {
         return this.playerTurnOrder.contains(p);
     }
 
-    public LinkedList<Player> getActivePlayers() {
+    public LinkedList<Player> getActivePlayers(DataKey key) {
+
+        if (key.isMasterKey())
+            return playerTurnOrder;
+
         return new LinkedList<>(playerTurnOrder);
     }
 
@@ -145,6 +152,18 @@ public class GameState {
             deckCopy.add(Card.Unknown);
 
         return deckCopy;
+    }
+
+    public Stack<Turn> getTurnHistory(DataKey key) {
+
+            if (key.isMasterKey())
+            return turnHistory;
+
+        return (Stack<Turn>) turnHistory.clone();
+    }
+
+    public Player getWinner() {
+        return this.winner;
     }
 
 
@@ -210,6 +229,40 @@ public class GameState {
         if (players.size() == 2)
             for (int i = 0; i < 3; ++i)
                 discard.add(deck.pop());
+
+        if (Game.PRINT_GAME_EVENTS) {
+
+            Game.println("There are " + deck.size() + " cards in the deck, " + discard.size() + " cards were discarded", false );
+
+
+            if (Game.PRINT_SENSITIVE_DATA) {
+                Game.indentation += 4;
+
+                int count = 0;
+                Game.print("Cards in deck: (Top to bottom): ", true);
+
+                Stack<Card> deckCopy = (Stack<Card>) deck.clone();
+                while (deckCopy.size() > 0)
+                    Game.print(deckCopy.pop() + "(" + ++count + "), ", true);
+
+//                for (Card c : deck)
+//                    Game.print(c + "(" + ++count + "), ", true);
+
+                Game.println("", true);
+
+                Game.print("Cards in discard: ", true);
+                for (Card c : discard) {
+                    Game.print(c + ", ", true);
+                }
+                Game.println("", true);
+
+                Game.indentation -= 4;
+            }
+
+
+
+        }
+
     }
 
     /**
@@ -246,17 +299,27 @@ public class GameState {
 
 
         // Add players to the turn order. #TODO: Support winner of last game going first
-        playerTurnOrder = new LinkedList<>();
+        playerTurnOrder.clear();
         for (Player p : this.players) {
             playerTurnOrder.add(p);
+        }
+
+        if (Game.PRINT_GAME_EVENTS) {
+            System.out.print("Turn order: ");
+
+            int order = 0;
+
+            for (Player p : playerTurnOrder)
+                System.out.print(order + ": " + p + ", ");
+
+            System.out.println();
         }
 
         setupDeck();
 
         for (Player p: this.players) {
             Card drawnCard = deck.pop();
-            ArrayList<Card> hand = p.getHand(key);
-            hand.add(drawnCard);
+            p.addCardToHand(key, drawnCard);
         }
 
         stage = GameStage.GAME_STARTED;
@@ -267,7 +330,18 @@ public class GameState {
         if (!key.isMasterKey())
             return;
 
+        if (Game.PRINT_GAME_EVENTS)
+            System.out.println(p + " was eliminated from the game");
+
         this.playerTurnOrder.remove(p);
+    }
+
+    public void saveTurn(DataKey key, Turn t) {
+
+        if (!key.isMasterKey())
+            return;
+
+        turnHistory.add(t);
     }
 
     /**
@@ -286,7 +360,24 @@ public class GameState {
         playerTurnOrder.add(tmp);
     }
 
+    /**
+     * setWinner
+     *  Sets the game winner and then ends the game
+     *
+     * @param key
+     * @param winner
+     */
+    public void setWinner(DataKey key, Player winner) {
 
+        if (!key.isMasterKey())
+            return;
+
+        if (Game.PRINT_GAME_EVENTS)
+            System.out.println("The winner of the game is: " + winner);
+
+        this.winner = winner;
+        this.stage = GameStage.GAME_ENDED;
+    }
 
 }
 

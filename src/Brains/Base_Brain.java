@@ -8,6 +8,9 @@ public abstract class Base_Brain {
 
     private static int nextBrainID = 0;
     public final int id = ++nextBrainID;
+    public int getId() {
+        return id;
+    }
 
 
     protected DataKey key;

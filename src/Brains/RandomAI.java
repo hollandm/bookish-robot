@@ -15,33 +15,46 @@ import java.util.Random;
  */
 public class RandomAI extends Base_Brain {
 
-    String name = "Random AI";
     Random random = new Random();
 
-    public void takeTurn(GameState state, Turn thisTurn) {
+    public RandomAI() {
+        super.name = "Random AI";
+    }
 
-        Player myPlayer = state.getCurrentPlayer();
-        ArrayList<Card> myHand = myPlayer.getHand(super.key);
+
+    public void takeTurn(GameState state, Turn thisTurn) {
 
         if (random.nextBoolean())
             thisTurn.swapPlayedAndRemainingCards(key);
 
-        thisTurn.setTargetPlayer(key, selectRandomEnemy(state));
+//        System.out.println(name + " " + super.id + " is playing " + thisTurn.getPlayedCard());
 
-        ArrayList<Card> guessable = Card.getGuessableCards();
-        Collections.shuffle(guessable);
-        thisTurn.setGuessedCard(key, guessable.get(0));
+        if (Card.getTargetingCards().contains(thisTurn.getPlayedCard())) {
+            Player target = selectRandomEnemy(state);
+            thisTurn.setTargetPlayer(key, target);
+//            System.out.println("    Targeting " + thisTurn.getTargetPlayer());
+        }
+
+        if (thisTurn.getPlayedCard() == Card.Guard) {
+            ArrayList<Card> guessable = Card.getGuessableCards();
+            Collections.shuffle(guessable);
+            thisTurn.setGuessedCard(key, guessable.get(0));
+//            System.out.println("    Guessing " + thisTurn.getGuessedCard());
+        }
+
 
     }
 
     private Player selectRandomEnemy(GameState state) {
 
-        LinkedList<Player> players = state.getActivePlayers();
+        LinkedList<Player> players = state.getActivePlayers(key);
         players.remove(state.getPlayerByID(super.id));
 
         Collections.shuffle(players);
 
-        return players.get(0);
+        Player selected = players.get(0);
+
+        return selected;
     }
 
 }

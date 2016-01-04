@@ -2,6 +2,7 @@ package Game.Model;
 
 import java.util.ArrayList;
 
+import Game.Game;
 import Game.Game.DataKey;
 
 
@@ -43,6 +44,19 @@ public class Player  {
 
     }
 
+    public boolean hasCard(DataKey key, Card card) {
+
+        if (!key.isMasterKey() || key.getPlayer() != this)
+            return false;
+
+        for (Card c : hand)
+            if (c == card)
+                return true;
+
+        return false;
+
+    }
+
 
     private int wins = 0;
     public int getWins() {
@@ -54,8 +68,8 @@ public class Player  {
     }
 
     public Player(String name, int id) {
-        playerID = id;
-        playerName = name;
+        this.playerID = id;
+        this.playerName = name;
     }
 
     private boolean isHandmaidenProtected = false;
@@ -91,8 +105,13 @@ public class Player  {
         if (!key.isMasterKey())
             return;
 
+//        Game.println(this + " discarded " + card, false);
+
         hand.remove(card);
         discardedCards.add(card);
     }
 
+    public String toString() {
+        return (this.playerName + " " + this.playerID);
+    }
 }
