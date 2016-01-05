@@ -1,12 +1,8 @@
 package Game.Model;
 
 import Game.Game.DataKey;
-
 import java.util.ArrayList;
 
-/**
- * Created by mbhol on 12/30/2015.
- */
 public class Turn {
 
     public Turn(DataKey key, Player actingPlayer, Card drawnCard, int turnCount) {
@@ -112,11 +108,7 @@ public class Turn {
 
         this.targetPlayer = targetPlayer;
 
-        if (targetPlayer != null) {
-            this.targetPlayerWasHandmaidProtected = targetPlayer.isHandmaidenProtected();
-        } else {
-            this.targetPlayerWasHandmaidProtected = false;
-        }
+        this.targetPlayerWasHandmaidProtected = targetPlayer != null && targetPlayer.isHandmaidenProtected();
 
     }
 

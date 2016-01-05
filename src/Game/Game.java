@@ -4,6 +4,7 @@ package Game;
 import Brains.Base_Brain;
 import Brains.*;
 import Game.Exceptions.GameException;
+import Game.Exceptions.HandToBigException;
 import Game.Model.*;
 
 import java.util.ArrayList;
@@ -63,6 +64,24 @@ public class Game {
         }
     }
 
+    private static boolean allowTesting = false;
+    private static boolean allowTesting_isSet = false;
+    public static void setAllowTesting(boolean allow) {
+
+        if (allowTesting_isSet)
+            return;
+
+        allowTesting_isSet = true;
+        allowTesting = allow;
+    }
+
+    public DataKey getTestKey(Player p) {
+        if (allowTesting == false)
+            return null;
+
+        return new DataKey(p);
+    }
+
     private int nextPlayerID = 0;
 
     GameState state = new GameState();
@@ -115,8 +134,6 @@ public class Game {
                 } while (thisTurn.isValidTurn(state) == false);
 
             }
-
-
 
             thisTurn.finalize(masterKey);
 
@@ -221,7 +238,12 @@ public class Game {
                         Game.println(action.getTargetPlayer() + " drew a new card", false);
                 }
 
-                action.getTargetPlayer().addCardToHand(key, state.getDeck(key).pop());
+                try {
+                    action.getTargetPlayer().addCardToHand(key, state.getDeck(key).pop());
+                } catch (HandToBigException e) {
+                    System.err.println("Could not add card to hand, hand to big");
+                }
+
                 break;
 
             case Handmaid:
@@ -343,9 +365,17 @@ public class Game {
 
     public static void main(String[] args) throws GameException {
 
+        Game.setAllowTesting(false);
+
         ArrayList<Base_Brain> brains = new ArrayList<>();
         brains.add(new RandomAI());
         brains.add(new RandomAI());
+        brains.add(new RandomAI());
+        brains.add(new RandomAI());
+        brains.add(new RandomAI());
+        brains.add(new RandomAI());
+
+
 
         Game game = new Game();
 

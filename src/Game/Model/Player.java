@@ -2,6 +2,7 @@ package Game.Model;
 
 import java.util.ArrayList;
 
+import Game.Exceptions.HandToBigException;
 import Game.Game;
 import Game.Game.DataKey;
 
@@ -35,10 +36,13 @@ public class Player  {
         return mysteryHand;
     }
 
-    public void addCardToHand(DataKey key, Card drawnCard) {
+    public void addCardToHand(DataKey key, Card drawnCard) throws HandToBigException {
 
         if (!key.isMasterKey())
             return;
+
+        if (hand.size() >= 2)
+            throw new HandToBigException();
 
         hand.add(drawnCard);
 
@@ -46,7 +50,7 @@ public class Player  {
 
     public boolean hasCard(DataKey key, Card card) {
 
-        if (!key.isMasterKey() || key.getPlayer() != this)
+        if (!key.isMasterKey() && key.getPlayer() != this)
             return false;
 
         for (Card c : hand)
@@ -85,13 +89,13 @@ public class Player  {
 
     private ArrayList<Card> discardedCards = new ArrayList<>();
 
-    public void addPlayedCard(DataKey key, Card playedCard) {
-
-        if (!key.isMasterKey())
-            return;
-
-        this.discardedCards.add(playedCard);
-    }
+//    public void addPlayedCard(DataKey key, Card playedCard) {
+//
+//        if (!key.isMasterKey())
+//            return;
+//
+//        this.discardedCards.add(playedCard);
+//    }
 
     public ArrayList<Card> getPlayedCards(DataKey key) {
 

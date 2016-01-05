@@ -319,7 +319,12 @@ public class GameState {
 
         for (Player p: this.players) {
             Card drawnCard = deck.pop();
-            p.addCardToHand(key, drawnCard);
+            try {
+                p.addCardToHand(key, drawnCard);
+            } catch (HandToBigException e) {
+                System.err.println("Could not add card to hand, hand to big");
+            }
+
         }
 
         stage = GameStage.GAME_STARTED;
