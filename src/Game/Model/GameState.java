@@ -321,7 +321,7 @@ public class GameState {
             Card drawnCard = deck.pop();
             try {
                 p.addCardToHand(key, drawnCard);
-            } catch (HandToBigException e) {
+            } catch (HandTooBigException e) {
                 System.err.println("Could not add card to hand, hand to big");
             }
 

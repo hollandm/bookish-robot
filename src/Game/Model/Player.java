@@ -2,8 +2,7 @@ package Game.Model;
 
 import java.util.ArrayList;
 
-import Game.Exceptions.HandToBigException;
-import Game.Game;
+import Game.Exceptions.HandTooBigException;
 import Game.Game.DataKey;
 
 
@@ -36,13 +35,13 @@ public class Player  {
         return mysteryHand;
     }
 
-    public void addCardToHand(DataKey key, Card drawnCard) throws HandToBigException {
+    public void addCardToHand(DataKey key, Card drawnCard) throws HandTooBigException {
 
         if (!key.isMasterKey())
             return;
 
         if (hand.size() >= 2)
-            throw new HandToBigException();
+            throw new HandTooBigException();
 
         hand.add(drawnCard);
 

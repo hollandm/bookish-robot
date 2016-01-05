@@ -1,4 +1,4 @@
-import Game.Exceptions.HandToBigException;
+import Game.Exceptions.HandTooBigException;
 import Game.Model.Card;
 import Game.Model.Player;
 import org.junit.Before;
@@ -174,7 +174,7 @@ public class PlayerTest {
         try {
             testPlayer1.addCardToHand(masterKey, Card.Guard);
             assert false;
-        } catch (HandToBigException e) {
+        } catch (HandTooBigException e) {
             assert actualHand.size() == 2;
         }
     }

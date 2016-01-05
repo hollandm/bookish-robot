@@ -4,7 +4,7 @@ package Game;
 import Brains.Base_Brain;
 import Brains.*;
 import Game.Exceptions.GameException;
-import Game.Exceptions.HandToBigException;
+import Game.Exceptions.HandTooBigException;
 import Game.Model.*;
 
 import java.util.ArrayList;
@@ -240,7 +240,7 @@ public class Game {
 
                 try {
                     action.getTargetPlayer().addCardToHand(key, state.getDeck(key).pop());
-                } catch (HandToBigException e) {
+                } catch (HandTooBigException e) {
                     System.err.println("Could not add card to hand, hand to big");
                 }
 
