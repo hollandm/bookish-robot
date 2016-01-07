@@ -1,5 +1,6 @@
 package Game.Model;
 
+import Game.Exceptions.HandTooBigException;
 import Game.Game.DataKey;
 import java.util.ArrayList;
 
@@ -10,8 +11,15 @@ public class Turn {
         this.drawnCard = drawnCard;
         this.turnCount = turnCount;
 
+//        try {
+//            this.actingPlayer.addCardToHand(key, drawnCard);
+//        } catch (HandTooBigException e) {
+//            System.err.println("Hand to big error");
+//        }
+
+//        ArrayList<Card> hand = this.actingPlayer.getHand(key);
+//        hand.add(drawnCard);
         ArrayList<Card> hand = this.actingPlayer.getHand(key);
-        hand.add(drawnCard);
 
         this.playedCard = hand.get(0);
         this.actingPlayerRemainingCard = hand.get(1);

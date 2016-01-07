@@ -1,3 +1,5 @@
+package Game.Model;
+
 import Game.Exceptions.HandTooBigException;
 import Game.Model.Card;
 import Game.Model.Player;

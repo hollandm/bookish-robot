@@ -18,6 +18,7 @@ public class Game {
     private static boolean isNewLine = true;
     public static int indentation = 0;
 
+    @SuppressWarnings("PointlessBooleanExpression")
     public static void print(String text, boolean isSensitive) {
         if (!PRINT_GAME_EVENTS)
             return;
@@ -33,6 +34,7 @@ public class Game {
         Game.isNewLine = false;
     }
 
+    @SuppressWarnings("PointlessBooleanExpression")
     public static void println(String text, boolean isSensitive) {
         if (!PRINT_GAME_EVENTS)
             return;
@@ -76,7 +78,7 @@ public class Game {
     }
 
     public DataKey getTestKey(Player p) {
-        if (allowTesting == false)
+        if (!allowTesting)
             return null;
 
         return new DataKey(p);
@@ -160,9 +162,13 @@ public class Game {
         state.getCurrentPlayer().setHandmaidProtected(key, false);
 
         Card drawnCard = state.getDeck(key).pop();
-        Turn thisTurn = new Turn(key, state.getCurrentPlayer(), drawnCard, state.getCurrentTurn());
+        try {
+            state.getCurrentPlayer().addCardToHand(key, drawnCard);
+        } catch (HandTooBigException e) {
+            System.err.println("Hand to big error");
+        }
 
-        return thisTurn;
+        return new Turn(key, state.getCurrentPlayer(), drawnCard, state.getCurrentTurn());
     }
 
     private void applyAction(Turn action, DataKey key) {
@@ -292,6 +298,7 @@ public class Game {
 
                 boolean wasCorrect = action.getTargetPlayersCard(key) == action.getGuessedCard();
 
+                //noinspection PointlessBooleanExpression
                 if (Game.PRINT_GAME_EVENTS && (Game.PRINT_SENSITIVE_DATA || wasCorrect))
                     Game.println(action.getTargetPlayer() + " had " + action.getTargetPlayersCard(key), !wasCorrect);
 
