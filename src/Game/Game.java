@@ -159,7 +159,7 @@ public class Game {
     private Turn startTurn(DataKey key) {
 
         // Handmaid protection wears off
-        state.getCurrentPlayer().setHandmaidProtected(key, false);
+        state.getCurrentPlayer().setProtected(key, false);
 
         Card drawnCard = state.getDeck(key).pop();
         try {
@@ -183,7 +183,7 @@ public class Game {
             if (action.getTargetPlayer() != null) {
                 Game.println("Targeted: " + action.getTargetPlayer(), false);
 
-                if (action.wasTargetPlayerHandmaidProtected())
+                if (action.wasTargetPlayerProtected())
                     Game.println(action.getTargetPlayer() + " is protected by the handmaiden", false);
             }
         }
@@ -202,7 +202,7 @@ public class Game {
                 break;
 
             case King:
-                if (action.wasTargetPlayerHandmaidProtected())
+                if (action.wasTargetPlayerProtected())
                     break;
                 Card activePlayerCard = action.getActingPlayerRemainingCard(key);
                 Card targetPlayerCard = action.getTargetPlayersCard(key);
@@ -225,7 +225,7 @@ public class Game {
                 break;
 
             case Prince:
-                if (action.wasTargetPlayerHandmaidProtected())
+                if (action.wasTargetPlayerProtected())
                     break;
 
                 if (Game.PRINT_GAME_EVENTS)
@@ -253,11 +253,11 @@ public class Game {
                 break;
 
             case Handmaid:
-                action.getActingPlayer().setHandmaidProtected(key, true);
+                action.getActingPlayer().setProtected(key, true);
                 break;
 
             case Baron:
-                if (action.wasTargetPlayerHandmaidProtected())
+                if (action.wasTargetPlayerProtected())
                     break;
 
                 if (Game.PRINT_GAME_EVENTS) {
@@ -281,7 +281,7 @@ public class Game {
 
             case Priest:
                 // The hand is visible to the player in the turn object
-                if (action.wasTargetPlayerHandmaidProtected())
+                if (action.wasTargetPlayerProtected())
                     break;
 
                 if (Game.PRINT_GAME_EVENTS)
@@ -290,7 +290,7 @@ public class Game {
                 break;
 
             case Guard:
-                if (action.wasTargetPlayerHandmaidProtected())
+                if (action.wasTargetPlayerProtected())
                     break;
 
                 if (Game.PRINT_GAME_EVENTS)

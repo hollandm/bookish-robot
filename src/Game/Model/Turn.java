@@ -1,6 +1,5 @@
 package Game.Model;
 
-import Game.Exceptions.HandTooBigException;
 import Game.Game.DataKey;
 import java.util.ArrayList;
 
@@ -11,16 +10,7 @@ public class Turn {
         this.drawnCard = drawnCard;
         this.turnCount = turnCount;
 
-//        try {
-//            this.actingPlayer.addCardToHand(key, drawnCard);
-//        } catch (HandTooBigException e) {
-//            System.err.println("Hand to big error");
-//        }
-
-//        ArrayList<Card> hand = this.actingPlayer.getHand(key);
-//        hand.add(drawnCard);
         ArrayList<Card> hand = this.actingPlayer.getHand(key);
-
         this.playedCard = hand.get(0);
         this.actingPlayerRemainingCard = hand.get(1);
 
@@ -90,7 +80,7 @@ public class Turn {
         if (key.getPlayer() == this.actingPlayer)
             return this.actingPlayerRemainingCard;
 
-        if (key.getPlayer() == this.targetPlayer && !this.targetPlayerWasHandmaidProtected
+        if (key.getPlayer() == this.targetPlayer && !this.targetPlayerWasProtected
                 && (isTurnFinalized && (this.playedCard == Card.Baron || this.playedCard == Card.King)))
             return this.actingPlayerRemainingCard;
 
@@ -100,7 +90,7 @@ public class Turn {
     /**
      * The player targeted. Will be set to null when isTurnFinalized if not relevent to the played card
      *  Writable with the MasterKey. Also writable by actingPlayer if isTurnFinalized is false.
-     *      The setter will also update targetPlayerWasHandmaidProtected
+     *      The setter will also update targetPlayerWasProtected
      *  Readable by everyone
      */
     private Player targetPlayer;
@@ -116,17 +106,17 @@ public class Turn {
 
         this.targetPlayer = targetPlayer;
 
-        this.targetPlayerWasHandmaidProtected = targetPlayer != null && targetPlayer.isHandmaidenProtected();
+        this.targetPlayerWasProtected = targetPlayer != null && targetPlayer.isProtected();
 
     }
 
     /**
      * Weather or not the target player was protected by the handmaiden during this turn
      */
-    private boolean targetPlayerWasHandmaidProtected;
+    private boolean targetPlayerWasProtected;
 
-    public boolean wasTargetPlayerHandmaidProtected() {
-        return targetPlayerWasHandmaidProtected;
+    public boolean wasTargetPlayerProtected() {
+        return targetPlayerWasProtected;
     }
 
 
@@ -147,12 +137,12 @@ public class Turn {
             return this.targetPlayersCard;
 
         // Visible to acting player if they played a Baron, King, or Prince, or Priest and the target is not protected
-        if (key.getPlayer() == this.actingPlayer && !this.targetPlayerWasHandmaidProtected
+        if (key.getPlayer() == this.actingPlayer && !this.targetPlayerWasProtected
                 && (isTurnFinalized && (this.playedCard == Card.Baron || this.playedCard == Card.King || this.playedCard == Card.Prince || this.playedCard == Card.Priest)))
             return this.targetPlayersCard;
 
         // Visible to everyone if this card was correctly guessed by a guard
-        if (this.playedCard == Card.Guard && !this.targetPlayerWasHandmaidProtected
+        if (this.playedCard == Card.Guard && !this.targetPlayerWasProtected
                 && this.guessedCard == this.targetPlayersCard)
             return this.targetPlayersCard;
 
@@ -202,14 +192,6 @@ public class Turn {
         return Card.Unknown;
     }
 
-    public void setTargetPlayerDrawnCard(DataKey key, Card drawnCard) {
-
-        if (!key.isMasterKey())
-            return;
-
-        this.targetPlayerDrawnCard = drawnCard;
-    }
-
 
     /**
      * If this turn object has been finalized then it can no longer be changed by players
@@ -247,13 +229,13 @@ public class Turn {
             return null;
 
         // Guard
-        if (this.playedCard == Card.Guard && !targetPlayerWasHandmaidProtected && this.targetPlayersCard == this.guessedCard)
+        if (this.playedCard == Card.Guard && !targetPlayerWasProtected && this.targetPlayersCard == this.guessedCard)
             return this.targetPlayer;
 
         // Priest, Not possible to eliminate
 
         // Baron
-        if (this.playedCard == Card.Baron && !targetPlayerWasHandmaidProtected) {
+        if (this.playedCard == Card.Baron && !targetPlayerWasProtected) {
             if (this.actingPlayerRemainingCard.value > this.targetPlayersCard.value)
                 return this.targetPlayer;
             else
@@ -263,7 +245,7 @@ public class Turn {
         // Handmaiden, Not possible to eliminate
 
         // Prince
-        if (this.playedCard == Card.Prince && !targetPlayerWasHandmaidProtected)
+        if (this.playedCard == Card.Prince && !targetPlayerWasProtected)
             if (this.targetPlayersCard == Card.Princess || this.targetPlayerDrawnCard == null)
                 return this.targetPlayer;
 

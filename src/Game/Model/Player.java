@@ -75,26 +75,19 @@ public class Player  {
         this.playerName = name;
     }
 
-    private boolean isHandmaidenProtected = false;
-    public boolean isHandmaidenProtected() {
-        return this.isHandmaidenProtected;
+    private boolean isProtected = false;
+    public boolean isProtected() {
+        return this.isProtected;
     }
-    public void setHandmaidProtected(DataKey key, boolean isProtected) {
+    public void setProtected(DataKey key, boolean isProtected) {
         if (!key.isMasterKey())
             return;
 
-       this.isHandmaidenProtected = isProtected;
+       this.isProtected = isProtected;
     }
 
     private ArrayList<Card> discardedCards = new ArrayList<>();
 
-//    public void addPlayedCard(DataKey key, Card playedCard) {
-//
-//        if (!key.isMasterKey())
-//            return;
-//
-//        this.discardedCards.add(playedCard);
-//    }
 
     public ArrayList<Card> getPlayedCards(DataKey key) {
 

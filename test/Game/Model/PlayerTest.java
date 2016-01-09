@@ -1,8 +1,6 @@
 package Game.Model;
 
 import Game.Exceptions.HandTooBigException;
-import Game.Model.Card;
-import Game.Model.Player;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -242,25 +240,25 @@ public class PlayerTest {
         Player testPlayer2 = new Player(TEST_PLAYER_2_NAME, TEST_PLAYER_2_ID);
         DataKey p2Key = keyFactory.getTestKey(testPlayer2);
 
-        assert !testPlayer1.isHandmaidenProtected();
+        assert !testPlayer1.isProtected();
 
-        testPlayer1.setHandmaidProtected(p1Key, true);
-        assert !testPlayer1.isHandmaidenProtected();
+        testPlayer1.setProtected(p1Key, true);
+        assert !testPlayer1.isProtected();
 
-        testPlayer1.setHandmaidProtected(p2Key, true);
-        assert !testPlayer1.isHandmaidenProtected();
+        testPlayer1.setProtected(p2Key, true);
+        assert !testPlayer1.isProtected();
 
-        testPlayer1.setHandmaidProtected(masterKey, true);
-        assert testPlayer1.isHandmaidenProtected();
+        testPlayer1.setProtected(masterKey, true);
+        assert testPlayer1.isProtected();
 
-        testPlayer1.setHandmaidProtected(p1Key, false);
-        assert testPlayer1.isHandmaidenProtected();
+        testPlayer1.setProtected(p1Key, false);
+        assert testPlayer1.isProtected();
 
-        testPlayer1.setHandmaidProtected(p2Key, false);
-        assert testPlayer1.isHandmaidenProtected();
+        testPlayer1.setProtected(p2Key, false);
+        assert testPlayer1.isProtected();
 
-        testPlayer1.setHandmaidProtected(masterKey, false);
-        assert !testPlayer1.isHandmaidenProtected();
+        testPlayer1.setProtected(masterKey, false);
+        assert !testPlayer1.isProtected();
 
     }
 
