@@ -1,5 +1,6 @@
 package Game.Model;
 
+import Game.Exceptions.NoTargetException;
 import Game.Game.DataKey;
 import java.util.ArrayList;
 
@@ -80,9 +81,18 @@ public class Turn {
         if (key.getPlayer() == this.actingPlayer)
             return this.actingPlayerRemainingCard;
 
-        if (key.getPlayer() == this.targetPlayer && !this.targetPlayerWasProtected
-                && (isTurnFinalized && (this.playedCard == Card.Baron || this.playedCard == Card.King)))
+        if (this.targetPlayerWasProtected)
+            return Card.Unknown;
+
+        if (!this.isTurnFinalized)
+            return Card.Unknown;
+
+        if (key.getPlayer() == this.targetPlayer && (this.playedCard == Card.Baron || this.playedCard == Card.King))
             return this.actingPlayerRemainingCard;
+
+        // Visible to everyone if this card was eliminated by the Baron
+        if (this.playedCard == Card.Baron && this.actingPlayerRemainingCard.value < this.targetPlayersCard.value)
+            return this.targetPlayersCard;
 
         return Card.Unknown;
     }
@@ -130,28 +140,51 @@ public class Turn {
 
     public Card getTargetPlayersCard(DataKey key) {
 
+        if (this.targetPlayersCard == null)
+            return null;
+
         if (key.isMasterKey())
             return this.targetPlayersCard;
 
         if (key.getPlayer() == this.targetPlayer)
             return this.targetPlayersCard;
 
-        // Visible to acting player if they played a Baron, King, or Prince, or Priest and the target is not protected
-        if (key.getPlayer() == this.actingPlayer && !this.targetPlayerWasProtected
-                && (isTurnFinalized && (this.playedCard == Card.Baron || this.playedCard == Card.King || this.playedCard == Card.Prince || this.playedCard == Card.Priest)))
-            return this.targetPlayersCard;
+        if (this.targetPlayerWasProtected)
+            return Card.Unknown;
+
+        if (!this.isTurnFinalized)
+            return Card.Unknown;
+
+        // Visible to acting player if
+        if (key.getPlayer() == this.actingPlayer) {
+
+            // They played a king
+            if (this.playedCard == Card.King)
+                return this.targetPlayersCard;
+
+            // They played a prince
+            if (this.playedCard == Card.Prince)
+                return this.targetPlayersCard;
+
+            // They played a priest
+            if (this.playedCard == Card.Priest)
+                return this.targetPlayersCard;
+
+            // They played a Baron
+            if (this.playedCard == Card.Baron)
+                return this.targetPlayersCard;
+        }
+
 
         // Visible to everyone if this card was correctly guessed by a guard
-        if (this.playedCard == Card.Guard && !this.targetPlayerWasProtected
-                && this.guessedCard == this.targetPlayersCard)
+        if (this.playedCard == Card.Guard && this.guessedCard == this.targetPlayersCard)
+            return this.targetPlayersCard;
+
+        // Visible to everyone if this card was eliminated by the Baron
+        if (this.playedCard == Card.Baron && this.actingPlayerRemainingCard.value > this.targetPlayersCard.value)
             return this.targetPlayersCard;
 
         return Card.Unknown;
-    }
-
-    public void setTargetPlayersCard(DataKey key, Card card) {
-        if (key.isMasterKey())
-            this.targetPlayersCard = card;
     }
 
     /**
@@ -192,6 +225,16 @@ public class Turn {
         return Card.Unknown;
     }
 
+    public void setTargetPlayerDrawnCard(DataKey key, Card drawnCard) throws NoTargetException {
+
+        if (this.targetPlayer == null)
+            throw new NoTargetException();
+
+        if (!key.isMasterKey())
+            return;
+
+        this.targetPlayerDrawnCard = drawnCard;
+    }
 
     /**
      * If this turn object has been finalized then it can no longer be changed by players
@@ -199,6 +242,9 @@ public class Turn {
      */
     private boolean isTurnFinalized = false;
     public void finalize(DataKey key) {
+
+        if (isTurnFinalized)
+            return;
 
         if (!key.isMasterKey())
             return;

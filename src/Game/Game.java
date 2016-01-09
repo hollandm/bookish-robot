@@ -133,7 +133,7 @@ public class Game {
                 do {
                     //noinspection ConstantConditions
                     currentPlayerBrain.takeTurn(state, thisTurn);
-                } while (thisTurn.isValidTurn(state) == false);
+                } while (!thisTurn.isValidTurn(state));
 
             }
 
@@ -156,22 +156,19 @@ public class Game {
 
     }
 
-    private Turn startTurn(DataKey key) {
+    private Turn startTurn(DataKey key) throws GameException{
 
         // Handmaid protection wears off
         state.getCurrentPlayer().setProtected(key, false);
 
         Card drawnCard = state.getDeck(key).pop();
-        try {
-            state.getCurrentPlayer().addCardToHand(key, drawnCard);
-        } catch (HandTooBigException e) {
-            System.err.println("Hand to big error");
-        }
+
+        state.getCurrentPlayer().addCardToHand(key, drawnCard);
 
         return new Turn(key, state.getCurrentPlayer(), drawnCard, state.getCurrentTurn());
     }
 
-    private void applyAction(Turn action, DataKey key) {
+    private void applyAction(Turn action, DataKey key) throws GameException {
 
         if (!key.isMasterKey())
             return;
@@ -213,8 +210,6 @@ public class Game {
                 action.getTargetPlayer().getHand(key).remove(targetPlayerCard);
                 action.getTargetPlayer().getHand(key).add(activePlayerCard);
 
-
-
                 if (Game.PRINT_GAME_EVENTS) {
                     Game.println(action.getActingPlayer() + " has traded hands with " + action.getTargetPlayer(), false);
 
@@ -244,11 +239,10 @@ public class Game {
                         Game.println(action.getTargetPlayer() + " drew a new card", false);
                 }
 
-                try {
-                    action.getTargetPlayer().addCardToHand(key, state.getDeck(key).pop());
-                } catch (HandTooBigException e) {
-                    System.err.println("Could not add card to hand, hand to big");
-                }
+                Card drawnCard = state.getDeck(key).pop();
+                action.getTargetPlayer().addCardToHand(key, drawnCard);
+                action.setTargetPlayerDrawnCard(key, drawnCard);
+
 
                 break;
 
