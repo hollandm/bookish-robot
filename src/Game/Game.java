@@ -192,6 +192,7 @@ public class Game {
         switch (action.getPlayedCard()) {
             case Princess:
                 state.eliminatePlayer(key, action.getActingPlayer());
+                action.setEliminatedPlayer(key, action.getActingPlayer());
                 break;
 
             case Countess:
@@ -229,6 +230,7 @@ public class Game {
                 action.getTargetPlayer().discardCard(key, action.getTargetPlayersCard(key));
                 if (state.countCardsLeftInDeck() == 0 || action.getTargetPlayersCard(key) == Card.Princess) {
                     state.eliminatePlayer(key, action.getTargetPlayer());
+                    action.setEliminatedPlayer(key, action.getTargetPlayer());
                     break;
                 }
 
@@ -264,10 +266,12 @@ public class Game {
                 if (action.getActingPlayerRemainingCard(key).value > action.getTargetPlayersCard(key).value) {
                     action.getTargetPlayer().discardCard(key, action.getTargetPlayersCard(key));
                     state.eliminatePlayer(key, action.getTargetPlayer());
+                    action.setEliminatedPlayer(key, action.getTargetPlayer());
                 }
                 else if (action.getActingPlayerRemainingCard(key).value < action.getTargetPlayersCard(key).value) {
                     action.getActingPlayer().discardCard(key, action.getActingPlayerRemainingCard(key));
                     state.eliminatePlayer(key, action.getActingPlayer());
+                    action.setEliminatedPlayer(key, action.getActingPlayer());
                 }
 
 
@@ -296,9 +300,10 @@ public class Game {
                 if (Game.PRINT_GAME_EVENTS && (Game.PRINT_SENSITIVE_DATA || wasCorrect))
                     Game.println(action.getTargetPlayer() + " had " + action.getTargetPlayersCard(key), !wasCorrect);
 
-                if (wasCorrect)
+                if (wasCorrect) {
                     state.eliminatePlayer(key, action.getTargetPlayer());
-
+                    action.setEliminatedPlayer(key, action.getTargetPlayer());
+                }
 
                 break;
 

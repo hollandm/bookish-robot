@@ -275,41 +275,19 @@ public class Turn {
      * @return If a player was eliminated this turn and the turn has been finalized then return that player.
      *      Otherwise return null
      */
+    private Player eliminatedPlayer = null;
+
+    public void setEliminatedPlayer(DataKey key, Player eliminated) {
+        if (key.isMasterKey())
+            this.eliminatedPlayer = eliminated;
+    }
+
     public Player getEliminatedPlayer() {
 
         if (!isTurnFinalized)
             return null;
 
-        // Guard
-        if (this.playedCard == Card.Guard && !targetPlayerWasProtected && this.targetPlayersCard == this.guessedCard)
-            return this.targetPlayer;
-
-        // Priest, Not possible to eliminate
-
-        // Baron
-        if (this.playedCard == Card.Baron && !targetPlayerWasProtected) {
-            if (this.actingPlayerRemainingCard.value > this.targetPlayersCard.value)
-                return this.targetPlayer;
-            else
-                return this.actingPlayer;
-        }
-
-        // Handmaiden, Not possible to eliminate
-
-        // Prince
-        if (this.playedCard == Card.Prince && !targetPlayerWasProtected)
-            if (this.targetPlayersCard == Card.Princess || this.targetPlayerDrawnCard == null)
-                return this.targetPlayer;
-
-        // King, Not possible to eliminate
-
-        // Countess, Not possible to eliminate
-
-        // Princess
-        if (this.playedCard == Card.Princess)
-            return this.actingPlayer;
-
-        return null;
+        return eliminatedPlayer;
     }
 
     /**
