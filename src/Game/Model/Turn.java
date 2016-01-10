@@ -6,9 +6,9 @@ import java.util.ArrayList;
 
 public class Turn {
 
-    public Turn(DataKey key, Player actingPlayer, Card drawnCard, int turnCount) {
+    public Turn(DataKey key, Player actingPlayer, int turnCount) {
         this.actingPlayer = actingPlayer;
-        this.drawnCard = drawnCard;
+        this.drawnCard = actingPlayer.getHand(key).get(1);
         this.turnCount = turnCount;
 
         ArrayList<Card> hand = this.actingPlayer.getHand(key);

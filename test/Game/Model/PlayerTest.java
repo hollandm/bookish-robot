@@ -313,8 +313,6 @@ public class PlayerTest {
 
     }
 
-
-
     @Test
     public void testGetPlayedCards() throws Exception {
 

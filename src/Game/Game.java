@@ -165,7 +165,7 @@ public class Game {
 
         state.getCurrentPlayer().addCardToHand(key, drawnCard);
 
-        return new Turn(key, state.getCurrentPlayer(), drawnCard, state.getCurrentTurn());
+        return new Turn(key, state.getCurrentPlayer(), state.getCurrentTurn());
     }
 
     private void applyAction(Turn action, DataKey key) throws GameException {
