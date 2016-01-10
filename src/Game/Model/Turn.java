@@ -68,8 +68,10 @@ public class Turn {
     /**
      * The other card in the acting players hand (relevant for the King and Baron)
      *  Player and MasterKey can swap this with the actingPlayerRemainingCard before this turn is finalized
-     *  Readable by MasterKey, actingPlayer. If the played card was a king or baron then it is also visible to the
-     *      target player. For everyone else it will return the "Unknown" card.
+     *  Readable:
+     *      - Always by MasterKey and actingPlayer.
+     *      - By target if they were not protected, and they were targeted by either a baron or a king
+     *      - By everyone, if the played card was a baron and the target lost
      */
     private Card actingPlayerRemainingCard;
 
@@ -117,6 +119,9 @@ public class Turn {
         this.targetPlayer = targetPlayer;
 
         this.targetPlayerWasProtected = targetPlayer != null && targetPlayer.isProtected();
+
+        // Can't set target player card here because the key provided is probably the acting player key and so it won't
+        //      be able to read it
 
     }
 
@@ -257,6 +262,7 @@ public class Turn {
         if (!Card.getTargetingCards().contains(this.playedCard))
             this.setTargetPlayer(key, null);
 
+        // This must be set here, because setTargetPlayer will only have the acting players read permissions
         if (this.targetPlayer != null)
             this.targetPlayersCard = this.targetPlayer.getHand(key).get(0);
 

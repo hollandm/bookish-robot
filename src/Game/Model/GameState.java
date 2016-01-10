@@ -204,7 +204,7 @@ public class GameState {
      *  Sets up the deck for a new game. Adds cards, shuffles, and discards
      * @throws InvalidStageException
      */
-    public void setupDeck() throws InvalidStageException {
+    private void setupDeck() throws InvalidStageException {
 
         if (stage != GameStage.PREGAME)
             throw new InvalidStageException();
