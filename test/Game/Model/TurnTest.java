@@ -591,8 +591,27 @@ public class TurnTest {
     }
 
     @Test
-    public void testGetEliminatedPlayer() throws Exception {
-        // TODO
+    public void testEliminatedPlayer() throws Exception {
+
+        Player p1 = makePlayer(true);
+        DataKey p1Key = keyFactory.getTestKey(p1);
+        Player p2 = makePlayer(false);
+
+        Turn t = new Turn(masterKey, p1, 0);
+        assert t.getEliminatedPlayer() == null;
+
+        t.setEliminatedPlayer(p1Key, p2);
+        assert t.getEliminatedPlayer() == null;
+
+        t.finalize(masterKey);
+        assert t.getEliminatedPlayer() == null;
+
+        t = new Turn(masterKey, p1, 0);
+        t.setEliminatedPlayer(masterKey, p2);
+        assert t.getEliminatedPlayer() == null;
+
+        t.finalize(masterKey);
+        assert t.getEliminatedPlayer() == p2;
     }
 
 }
