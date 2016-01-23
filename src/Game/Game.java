@@ -92,11 +92,11 @@ public class Game {
 
     }
 
-    public void runGame(ArrayList<Base_Brain> brains) throws GameException{
+    public void runGame(ArrayList<Base_Brain> participants, ArrayList<Base_Brain> spectators) throws GameException{
 
         DataKey masterKey = new DataKey(null);
 
-        for (Base_Brain brain : brains) {
+        for (Base_Brain brain : participants) {
             Player p = state.addPlayer(brain.getName(), brain.id);
             DataKey key = new DataKey(p);
 
@@ -114,7 +114,7 @@ public class Game {
             int currentPlayerId = currentPlayer.getPlayerID();
             Base_Brain currentPlayerBrain = null;
 
-            for (Base_Brain brain : brains)
+            for (Base_Brain brain : participants)
                 if (brain.getId() == currentPlayerId)
                     currentPlayerBrain = brain;
 
@@ -147,7 +147,10 @@ public class Game {
 
             state.saveTurn(masterKey, thisTurn);
 
-            for (Base_Brain brain : brains)
+            for (Base_Brain brain : participants)
+                brain.showTurn(thisTurn);
+
+            for (Base_Brain brain : spectators)
                 brain.showTurn(thisTurn);
 
             state.nextTurn(masterKey);
@@ -373,19 +376,22 @@ public class Game {
 
         Game.setAllowTesting(false);
 
-        ArrayList<Base_Brain> brains = new ArrayList<>();
-        brains.add(new RandomAI());
-        brains.add(new RandomAI());
-        brains.add(new RandomAI());
-        brains.add(new RandomAI());
-        brains.add(new RandomAI());
-        brains.add(new RandomAI());
+        ArrayList<Base_Brain> participants = new ArrayList<>();
+        participants.add(new RandomAI());
+        participants.add(new RandomAI());
+        participants.add(new RandomAI());
+        participants.add(new RandomAI());
+        participants.add(new RandomAI());
+        participants.add(new RandomAI());
+
+
+        ArrayList<Base_Brain> spectators = new ArrayList<>();
 
 
 
         Game game = new Game();
 
-        game.runGame(brains);
+        game.runGame(participants, spectators);
 
     }
 

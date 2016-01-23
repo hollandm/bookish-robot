@@ -540,8 +540,8 @@ public class TurnTest {
         state.startGame(masterKey);
 
         Player p1 = state.getCurrentPlayer();
-        Player p2 = state.getNnthNextPlayer(1);
-        Player p3 = state.getNnthNextPlayer(2);
+        Player p2 = state.getNthNextPlayer(1);
+        Player p3 = state.getNthNextPlayer(2);
         assert p1 != p3 && p2 != p3;
         state.eliminatePlayer(masterKey, p3);
 

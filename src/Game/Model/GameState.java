@@ -28,7 +28,7 @@ public class GameState {
     // discard: the cards that were set aside at the beginning of the game
     private ArrayList<Card> discard;
 
-    //turnHistory: The turns that have occured in the game
+    //turnHistory: The turns that have occurred in the game
     private Stack<Turn> turnHistory;
 
     private Player winner;
@@ -59,6 +59,13 @@ public class GameState {
         return null;
     }
 
+    public ArrayList<Player> getPlayers(DataKey key) {
+        if (key.isMasterKey())
+            return this.players;
+
+        return new ArrayList<>(this.players);
+    }
+
     /**
      * getCurrentPlayer
      * @return The player object of the player whose turn it is
@@ -72,14 +79,14 @@ public class GameState {
     }
 
     /**
-     * getNnthNextPlayer
+     * getNthNextPlayer
      *  Get the nth next player were 0 is the current player, 1 is the next player, ect. This will wrap so you can see
      *      more than one round into the future assuming no more players get eliminated.
      *
      * @param n, the index to look up
      * @return the nth next player
      */
-    public Player getNnthNextPlayer(int n) {
+    public Player getNthNextPlayer(int n) {
 
         if (playerTurnOrder.isEmpty())
             return null;
@@ -185,13 +192,13 @@ public class GameState {
      *
      * @return player id assigned to the new player
      */
-    public Player addPlayer(String name, int id) throws InvalidStageException, PlayerCountExeption {
+    public Player addPlayer(String name, int id) throws InvalidStageException, PlayerCountException {
 
         if (stage != GameStage.PREGAME)
             throw new InvalidStageException();
 
         if (players.size() >= Rules.MAX_PLAYERS)
-            throw new PlayerCountExeption();
+            throw new PlayerCountException();
 
         Player newPlayer = new Player(name, id);
         players.add(newPlayer);
@@ -285,17 +292,21 @@ public class GameState {
      *  Starts the game if there are enough players and it is not already started
      *
      * @throws InvalidStageException
-     * @throws PlayerCountExeption
+     * @throws PlayerCountException
      */
-    public void startGame(DataKey key) throws InvalidStageException, PlayerCountExeption {
+    public void startGame(DataKey key) throws InvalidStageException, PlayerCountException {
 
         if (stage != GameStage.PREGAME)
             throw new InvalidStageException();
 
         if (players.size() < Rules.MIN_PLAYERS)
-            throw new PlayerCountExeption();
+            throw new PlayerCountException();
 
-        // No need to check if master key because brains can't do anything yet
+        if (players.size() > Rules.MAX_PLAYERS)
+            throw new PlayerCountException();
+
+        if (!key.isMasterKey())
+            return;
 
 
         // Add players to the turn order. #TODO: Support winner of last game going first
@@ -330,6 +341,12 @@ public class GameState {
         stage = GameStage.GAME_STARTED;
     }
 
+    /**
+     * eliminatePlayer
+     *  Removes the given player from
+     * @param key
+     * @param p
+     */
     public void eliminatePlayer(DataKey key, Player p) {
 
         if (!key.isMasterKey())
@@ -341,6 +358,12 @@ public class GameState {
         this.playerTurnOrder.remove(p);
     }
 
+    /**
+     * saveTurn
+     *  Adds a given turn to the turn history
+     * @param key
+     * @param t
+     */
     public void saveTurn(DataKey key, Turn t) {
 
         if (!key.isMasterKey())

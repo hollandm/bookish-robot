@@ -6,6 +6,8 @@ import java.util.ArrayList;
 
 public class Turn {
 
+    //TODO: At the end of the game make all data visible
+
     public Turn(DataKey key, Player actingPlayer, int turnCount) {
         this.actingPlayer = actingPlayer;
         this.drawnCard = actingPlayer.getHand(key).get(1);
